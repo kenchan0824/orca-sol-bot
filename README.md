@@ -10,7 +10,7 @@ Subscribe to @OrcaSolBot on Telegram and input your Solana wallet address.
 
 ## To Do List
 
-- [ ] Function to list all LP postions owned by a wallet.
+- [x] Function to list all LP postions owned by a wallet.
 - [ ] Function to query the symbol of a token minit address.
 - [ ] Function to retrieve the details of an LP position.
 - [ ] Set up a Telgram bot.
