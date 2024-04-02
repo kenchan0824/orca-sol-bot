@@ -12,6 +12,8 @@
   "dependencies": {
     "@orca-so/whirlpools-sdk": "^0.12.5",
     "axios": "^1.6.8",
-    "bn.js": "^5.2.1"
+    "bn.js": "^5.2.1",
+    "dotenv": "^16.4.5",
+    "grammy": "^1.22.0"
   }
 }
