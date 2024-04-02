@@ -4,6 +4,8 @@ import {
 } from "@orca-so/whirlpools-sdk";
 import { TOKEN_PROGRAM_ID, unpackAccount } from "@solana/spl-token";
 import BN from "bn.js";
+import axios from 'axios';
+
 
 export function getContext() {
     const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
@@ -36,3 +38,12 @@ export async function listPositionsByOwner(ctx, wallet_address) {
 
     return position_addresses;
 };
+
+export async function listTokenSymbols() {
+    const tokensSymbols = {}
+    const { data } = await axios.get("https://api.mainnet.orca.so/v1/token/list");
+    data.tokens.forEach(({ mint, symbol }) => {
+        if (symbol) tokensSymbols[mint] = symbol;
+    })
+    return tokensSymbols;
+}

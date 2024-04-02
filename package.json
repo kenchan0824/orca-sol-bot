@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@orca-so/whirlpools-sdk": "^0.12.5",
+    "axios": "^1.6.8",
     "bn.js": "^5.2.1"
   }
 }
