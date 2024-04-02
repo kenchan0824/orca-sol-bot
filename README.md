@@ -6,9 +6,9 @@ The bot can also notify the users when their LPs are out of range.
 
 ## Usage
 
-![demo](./demo.jpg)
+Subscribe to `@OrcaSolBot` on Telegram and input your Solana wallet address.
 
-Subscribe to @OrcaSolBot on Telegram and input your Solana wallet address.
+<img src="./demo.jpg" width=50%/>
 
 ## To Do List
 
