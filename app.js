@@ -11,6 +11,7 @@ bot.command('start', (ctx) => {
 });
 
 bot.on('message', async (ctx) => {
+    if (!ctx.message.text) return;
     const wallet_address = ctx.message.text.trim();
     try {
         const orca = await getContext();
