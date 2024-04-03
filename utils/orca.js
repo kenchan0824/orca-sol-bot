@@ -48,7 +48,7 @@ export async function listPositionsByOwner(ctx, wallet_address) {
     return position_addresses;
 };
 
-export async function listTokenSymbols() {
+async function listTokenSymbols() {
     const tokensSymbols = {}
     const { data } = await axios.get("https://api.mainnet.orca.so/v1/token/list");
     data.tokens.forEach(({ mint, symbol }) => {
@@ -73,11 +73,34 @@ export async function getPositionDetails(ctx, position_address) {
     const lower_price = PriceMath.tickIndexToPrice(position.tickLowerIndex, token_a.decimals, token_b.decimals);
     const upper_price = PriceMath.tickIndexToPrice(position.tickUpperIndex, token_a.decimals, token_b.decimals);
 
+    const token_a_mint = token_a.mint.toBase58();
+    const token_b_mint = token_b.mint.toBase58();
+
+    if (checkTokensFlipped(token_a_mint, token_b_mint)) {
+        return {
+            token_a: ctx.tokenSymbols[token_b_mint]
+            , token_b: ctx.tokenSymbols[token_a_mint]
+            , pool_price: 1/pool_price
+            , lower_price: 1/upper_price
+            , upper_price: 1/lower_price
+        };
+    }
+
     return {
-        token_a: ctx.tokenSymbols[token_a.mint.toBase58()]
-        , token_b: ctx.tokenSymbols[token_b.mint.toBase58()]
+        token_a: ctx.tokenSymbols[token_a_mint]
+        , token_b: ctx.tokenSymbols[token_b_mint]
         , pool_price
         , lower_price
         , upper_price
-    }
+    };
+}
+
+function checkTokensFlipped(token_a, token_b) {
+    const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+    const WSOL_MINT = 'So11111111111111111111111111111111111111112';
+
+    if (token_a == USDC_MINT) return true;
+    if (token_a == WSOL_MINT) return (token_b !== USDC_MINT);
+    
+    return false;
 }
