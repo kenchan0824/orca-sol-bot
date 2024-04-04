@@ -16,10 +16,14 @@ bot.on('message', async (ctx) => {
     try {
         const orca = await getContext();
         const position_keys = await listPositionsByOwner(orca, wallet_address);
-        for (const [idx, key] of position_keys.entries()) {
-            const position = await getPositionDetails(orca, key);
-            const range = format(position.pool_price, position.lower_price, position.upper_price);
-            ctx.reply(`${idx+1}.\t${position.token_a} - ${position.token_b}\t\t${range}`);
+        for (const key of position_keys) {
+            const lp = await getPositionDetails(orca, key);
+            const out_range = lp.pool_price > lp.upper_price || lp.pool_price < lp.lower_price;
+            const range_text = format(lp.pool_price, lp.lower_price, lp.upper_price);
+            ctx.reply(
+                `${out_range ? '🚫' : '✅'} *${lp.token_a} \\- ${lp.token_b}*  ${range_text}`
+                , { parse_mode: "MarkdownV2" }
+            );
         }
     } catch (err) {
         ctx.reply("Sorry, I can't recognise this address.");

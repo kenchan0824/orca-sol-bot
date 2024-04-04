@@ -3,16 +3,20 @@ function num_to_pct(num) {
 }
 
 export function format(current, lower, upper) {
-    const lower_buffer = lower / current - 1;
+    const lower_buffer = 1 - lower / current;
     const upper_buffer =  upper / current - 1;
 
-    const below_lower = current / lower - 1;
+    const below_lower = 1 - current / lower;
     const above_upper = current / upper - 1;
 
     if (current < lower) {
-        return `(x)  ${num_to_pct(below_lower)}  [   +${num_to_pct(upper_buffer)} ]`;
+        return `⚽️ *\\-${num_to_pct(below_lower)}* 🗑 🗑`;
     } else if (current > upper) {
-        return `[ ${num_to_pct(lower_buffer)}   ]  +${num_to_pct(above_upper)}  (x)`;
+        return `🗑 🗑 *+${num_to_pct(above_upper)}* ⚽️`;
     }
-    return `[ ${num_to_pct(lower_buffer)}  (x)  +${num_to_pct(upper_buffer)} ]`;
+    if (upper_buffer < lower_buffer) {
+        return `🗑 ⚽️ *\\+${num_to_pct(upper_buffer)}* 🗑`;
+    } else {
+        return `🗑 *\\-${num_to_pct(lower_buffer)}* ⚽️ 🗑`;
+    }
 }
