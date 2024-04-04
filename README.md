@@ -18,6 +18,6 @@ Subscribe to `@OrcaSolBot` on Telegram and input your Solana wallet address.
 - [x] ~~Set up a Telgram bot.~~
 - [x] ~~Bot listener to handle wallet address input and output list of LPs.~~
 - [x] ~~Force to use SOL or USDC as quote token.~~
-- [ ] Function to display the LP's range map in text mode.
+- [x] ~~Function to display the LP's range map in text mode.~~
 - [ ] Event loop to check LPs at fixed intervals and notify users when their positions are out of range.
 - [ ] Stop notification when a LP range alert was triggered once.

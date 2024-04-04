@@ -1,8 +1,8 @@
 import { Bot } from 'grammy';
 import dotenv from 'dotenv';
 dotenv.config();
-import { getContext, listPositionsByOwner, getPositionDetails} from './utils/orca.js'
-
+import { getContext, listPositionsByOwner, getPositionDetails} from './utils/orca.js';
+import { format } from './utils/range.js';
 
 const bot = new Bot(process.env.TG_API_KEY);
 
@@ -18,7 +18,8 @@ bot.on('message', async (ctx) => {
         const position_keys = await listPositionsByOwner(orca, wallet_address);
         for (const [idx, key] of position_keys.entries()) {
             const position = await getPositionDetails(orca, key);
-            ctx.reply(`${idx+1}. ${position.token_a} - ${position.token_b}`);
+            const range = format(position.pool_price, position.lower_price, position.upper_price);
+            ctx.reply(`${idx+1}.\t${position.token_a} - ${position.token_b}\t\t${range}`);
         }
     } catch (err) {
         ctx.reply("Sorry, I can't recognise this address.");
