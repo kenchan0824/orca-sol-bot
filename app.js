@@ -16,7 +16,7 @@ bot.on('message', async (ctx) => {
     try {
         const orca = await getContext();
         const position_keys = await listPositionsByOwner(orca, wallet_address);
-        await ctx.reply("🤔  Let me 👀 into your LP positions ...");
+        await ctx.reply("🤔  Let me 👀 into your LPs ...");
         const lines = [];
         for (const key of position_keys) {
             const lp = await getPositionDetails(orca, key);
