@@ -8,6 +8,8 @@ import BN from "bn.js";
 import axios from 'axios';
 import dotenv from 'dotenv';
 dotenv.config();
+import { sleep } from './async.js';
+
 
 export async function getContext() {
     const connection = new Connection(process.env.RPC_URL, 'confirmed');
@@ -36,7 +38,7 @@ export async function listPositionsByOwner(ctx, wallet_address) {
         }
     });
 
-    /// Try to get data from Whirlpool position addresses
+    // Try to get data from Whirlpool position addresses
     const candidates = await ctx.fetcher.getPositions(pda_pubkeys, IGNORE_CACHE);
     const position_addresses = [];
     pda_pubkeys.forEach((pubkey) => {
@@ -49,7 +51,7 @@ export async function listPositionsByOwner(ctx, wallet_address) {
     return position_addresses;
 };
 
-async function listTokenSymbols() {
+export async function listTokenSymbols() {
     const tokensSymbols = {}
     const { data } = await axios.get("https://api.mainnet.orca.so/v1/token/list");
     data.tokens.forEach(({ mint, symbol }) => {
@@ -62,11 +64,13 @@ export async function getPositionDetails(ctx, position_address) {
     const client = buildWhirlpoolClient(ctx);
     const pubkey = new PublicKey(position_address);
     const position = (await client.getPosition(pubkey)).getData();
+    await sleep(400);
     
     // Get the pool to which the position belongs
     const pool = await client.getPool(position.whirlpool);
     const token_a = pool.getTokenAInfo();
     const token_b = pool.getTokenBInfo();
+    await sleep(400);
 
     const pool_price = PriceMath.sqrtPriceX64ToPrice(pool.getData().sqrtPrice, token_a.decimals, token_b.decimals);
     
@@ -105,3 +109,6 @@ function checkTokensFlipped(token_a, token_b) {
     
     return false;
 }
+
+// const ctx = await getContext();
+// await listPositionsByOwner(ctx, 'Z8HMxYXbDLo7xW73meUVMRudequ6giMZUNfu3q5k5sL');
