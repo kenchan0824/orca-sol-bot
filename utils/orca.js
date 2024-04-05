@@ -1,4 +1,4 @@
-import { Connection, clusterApiUrl, PublicKey } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import {
     WhirlpoolContext, ORCA_WHIRLPOOL_PROGRAM_ID, PDAUtil, IGNORE_CACHE
     , buildWhirlpoolClient, PriceMath
@@ -6,10 +6,11 @@ import {
 import { TOKEN_PROGRAM_ID, unpackAccount } from "@solana/spl-token";
 import BN from "bn.js";
 import axios from 'axios';
-
+import dotenv from 'dotenv';
+dotenv.config();
 
 export async function getContext() {
-    const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
+    const connection = new Connection(process.env.RPC_URL, 'confirmed');
     const ctx = WhirlpoolContext.from(connection, {}, ORCA_WHIRLPOOL_PROGRAM_ID);
     ctx.tokenSymbols = await listTokenSymbols();
     return ctx;
