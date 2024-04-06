@@ -72,11 +72,11 @@ export async function getPositionDetails(ctx, position_address) {
     const token_b = pool.getTokenBInfo();
     await sleep(400);
 
-    const pool_price = PriceMath.sqrtPriceX64ToPrice(pool.getData().sqrtPrice, token_a.decimals, token_b.decimals);
+    const pool_price = +PriceMath.sqrtPriceX64ToPrice(pool.getData().sqrtPrice, token_a.decimals, token_b.decimals);
     
     // Get the price range of the position
-    const lower_price = PriceMath.tickIndexToPrice(position.tickLowerIndex, token_a.decimals, token_b.decimals);
-    const upper_price = PriceMath.tickIndexToPrice(position.tickUpperIndex, token_a.decimals, token_b.decimals);
+    const lower_price = +PriceMath.tickIndexToPrice(position.tickLowerIndex, token_a.decimals, token_b.decimals);
+    const upper_price = +PriceMath.tickIndexToPrice(position.tickUpperIndex, token_a.decimals, token_b.decimals);
 
     const token_a_mint = token_a.mint.toBase58();
     const token_b_mint = token_b.mint.toBase58();
