@@ -7,7 +7,15 @@ import { format } from './utils/range.js';
 const bot = new Bot(process.env.TG_API_KEY);
 
 bot.command('start', (ctx) => {
-    ctx.reply('Welcome to the Orca Solana Bot.');
+    const msg = "*Orca Alert Bot*\n" +
+    "We notify you when your Orca's 🐳 LPs are out of range\\.\n" +
+    "No false alarm\\. 🚨 No NFT 🗿 required\\.\n\n" +
+    "*Usage*\n" +
+    "Paste your Solana wallet 💰 address to start with\\. We list all of your LP positions\\.\n\n" +
+    "The number beside ⚽️ indicates the buffer to the nearest boundary 🗑, when the position is in range ✅\\. " +
+    "Otherwise 🚫, it shows how the current price ⚽️ derivates from the boundary 🗑\\."
+
+    ctx.reply(msg, { parse_mode: "MarkdownV2" });
 });
 
 bot.on('message', async (ctx) => {
