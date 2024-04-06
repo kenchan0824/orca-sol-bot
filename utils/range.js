@@ -10,13 +10,13 @@ export function format(current, lower, upper) {
     const above_upper = current / upper - 1;
 
     if (current < lower) {
-        return `⚽️ \\-${num_to_pct(below_lower)} 🗑 🗑`;
+        return `⚽️ \`-${num_to_pct(below_lower)}\` 🗑 🗑`;
     } else if (current > upper) {
-        return `🗑 🗑 \\+${num_to_pct(above_upper)} ⚽️`;
+        return `🗑 🗑 \`+${num_to_pct(above_upper)}\` ⚽️`;
     }
     if (upper_buffer < lower_buffer) {
-        return `🗑 ⚽️ \\+${num_to_pct(upper_buffer)} 🗑`;
+        return `🗑 ⚽️ \`+${num_to_pct(upper_buffer)}\` 🗑`;
     } else {
-        return `🗑 \\-${num_to_pct(lower_buffer)} ⚽️ 🗑`;
+        return `🗑 \`-${num_to_pct(lower_buffer)}\` ⚽️ 🗑`;
     }
 }

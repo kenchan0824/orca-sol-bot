@@ -109,6 +109,3 @@ function checkTokensFlipped(token_a, token_b) {
     
     return false;
 }
-
-// const ctx = await getContext();
-// await listPositionsByOwner(ctx, 'Z8HMxYXbDLo7xW73meUVMRudequ6giMZUNfu3q5k5sL');
