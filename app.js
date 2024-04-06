@@ -24,8 +24,9 @@ bot.on('message', async (ctx) => {
             await ctx.reply("🤔  Let me check your LPs ...");
             for (const key of position_keys) {
                 const lp = await getPositionDetails(orca, key);
+                console.log(lp);
                 const out_range = lp.pool_price > lp.upper_price || lp.pool_price < lp.lower_price;
-                const range_text = format(lp.pool_price, lp.lower_price, lp.upper_price);
+                const range_text = format(+lp.pool_price, +lp.lower_price, +lp.upper_price);
                 lines.push(`${out_range ? '🚫' : '✅'}  *${lp.token_a} \\- ${lp.token_b}*  ${range_text}`)
             }
             await ctx.reply(lines.join('\n\n'), { parse_mode: "MarkdownV2" });
