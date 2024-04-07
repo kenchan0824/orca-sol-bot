@@ -21,11 +21,6 @@ bot.on('message', async (ctx) => address_handler(ctx, session));
 bot.start();
 console.log('bot is running ...');
 
-await bot.api.setMyCommands([
-    { command: "start", description: "bot description" },
-    { command: "stop", description: "stop notification" },
-]);
-
 setInterval(async () => {
     if (!busy) {
         busy = true;
