@@ -21,7 +21,7 @@ export async function address_handler(ctx, session) {
     const wallet_address = ctx.message.text.trim();
     console.log('>>>> Timestamp', new Date().toLocaleString());
     console.log('>>>> Wallet Address', wallet_address);
-    const valid_lps = [];
+    const candidates = [];
 
     try {
         const orca = await getContext();
@@ -36,7 +36,8 @@ export async function address_handler(ctx, session) {
                 const out_range = lp.pool_price > lp.upper_price || lp.pool_price < lp.lower_price;
                 const range_text = format(lp.pool_price, lp.lower_price, lp.upper_price);
                 lines.push(`${out_range ? '🚫' : '✅'}  *${lp.token_a} \\- ${lp.token_b}*  ${range_text}`)
-                if (!out_range) valid_lps.push(key);
+                // if (!out_range) 
+                candidates.push(key);
             }
             ctx.reply(lines.join('\n\n'), { parse_mode: "MarkdownV2" });            
         } else {
@@ -46,8 +47,8 @@ export async function address_handler(ctx, session) {
         await ctx.reply("🙅🏻‍♂️  Sorry I can't recognise your wallet address.");
         console.log(err);
     } finally {
-        if (valid_lps.length) {
-            session[ctx.message.from.id] = valid_lps;
+        if (candidates.length) {
+            session[ctx.message.from.id] = candidates;
         } else {
             delete session[ctx.message.from.id];
         }
