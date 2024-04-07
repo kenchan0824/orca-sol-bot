@@ -6,10 +6,10 @@ import { sleep } from './utils/async.js';
 export function start_handler(ctx) {
 
     const msg = "*Orca Alert Bot*\n" +
-    "We notify when your Orca's 🐳 LPs are out of range\\.\n" +
+    "We notify when your Orca 🐳 LPs are out of range\\.\n" +
     "No false alarm\\. 🚨 No NFT 🗿 required\\.\n\n" +
     "*How To Use*\n" +
-    "Paste your Solana wallet 💰 address to start with\\. We list all of your LP positions\\.\n\n" +
+    "Paste your Solana wallet 💰 address to start with\\. We'll list all your Orca 🐳 LP positions\\.\n\n" +
     "The number beside ⚽️ indicates the buffer to the nearest boundary 🗑, when the position is in range ✅\\. " +
     "Otherwise 🚫, it shows how the current price ⚽️ derivates from the boundary 🗑\\.\n\n" +
     "Keep calm and stay farming\\. We'll notify 🔔 you when the time comes, but only for the last address inputted\\."
@@ -30,7 +30,7 @@ export async function address_handler(ctx, session) {
         const position_keys = await listPositionsByOwner(orca, wallet_address);
 
         if (position_keys.length) {
-            ctx.reply("🤔  Let me check your LPs ...");
+            await ctx.reply("🤔  Let me check your LPs ...");
 
             const lines = [];
             for (const key of position_keys) {
@@ -40,12 +40,18 @@ export async function address_handler(ctx, session) {
                 lines.push(`${out_range ? '🚫' : '✅'}  *${lp.token_a} \\- ${lp.token_b}*  ${range_text}`)
                 if (!out_range) candidates.push(key);
             }
-            ctx.reply(lines.join('\n\n'), { parse_mode: "MarkdownV2" });            
+            await ctx.reply(lines.join('\n\n'), { parse_mode: "MarkdownV2" });            
         } else {
-            ctx.reply("🤷🏻‍♂️  It seems you don't have any LPs.");
+            await ctx.reply("🤷🏻‍♂️  It seems you don't have any LPs.");
+            await ctx.reply("🔕  Notification Off");
+        }
+
+        if (candidates.length) {
+            await ctx.reply("🔔  Notification On");
         }
     } catch (err) {
-        await ctx.reply("🙅🏻‍♂️  Sorry I can't recognise your wallet address.");
+        await ctx.reply("🙅🏻‍♂️  Sorry, I can't recognise your wallet address.");
+        await ctx.reply("🔕  Notification Off");
         console.log(err);
     } finally {
         if (candidates.length) {
