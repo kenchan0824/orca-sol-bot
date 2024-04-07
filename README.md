@@ -6,7 +6,7 @@ The bot can also notify the users when their LPs are out of range.
 
 ## Usage
 
-Subscribe to `@OrcaSolBot` on Telegram and input your Solana wallet address.
+Subscribe to `@OrcaSolBot` on Telegram and paste your Solana wallet address.
 
 <img src="./demo.jpg" width=50%/>
 
@@ -19,5 +19,5 @@ Subscribe to `@OrcaSolBot` on Telegram and input your Solana wallet address.
 - [x] ~~Bot listener to handle wallet address input and output list of LPs.~~
 - [x] ~~Force to use SOL or USDC as quote token.~~
 - [x] ~~Function to display the LP's range map in text mode.~~
-- [ ] Event loop to check LPs at fixed intervals and notify users when their positions are out of range.
-- [ ] Stop notification when a LP range alert was triggered once.
+- [x] ~~Event loop to check LPs at fixed intervals and notify users when their positions are out of range.~~
+- [x] ~~Stop notification when a LP range alert was triggered once.~~
