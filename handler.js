@@ -8,10 +8,11 @@ export function start_handler(ctx) {
     const msg = "*Orca Alert Bot*\n" +
     "We notify when your Orca's 🐳 LPs are out of range\\.\n" +
     "No false alarm\\. 🚨 No NFT 🗿 required\\.\n\n" +
-    "*Usage*\n" +
+    "*How To Use*\n" +
     "Paste your Solana wallet 💰 address to start with\\. We list all of your LP positions\\.\n\n" +
     "The number beside ⚽️ indicates the buffer to the nearest boundary 🗑, when the position is in range ✅\\. " +
-    "Otherwise 🚫, it shows how the current price ⚽️ derivates from the boundary 🗑\\."
+    "Otherwise 🚫, it shows how the current price ⚽️ derivates from the boundary 🗑\\.\n\n" +
+    "Keep calm and stay farming\\. We'll notify 🔔 you when the time comes, but only for the last address inputted\\."
 
     ctx.reply(msg, { parse_mode: "MarkdownV2" });
 }
