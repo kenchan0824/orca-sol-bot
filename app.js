@@ -9,11 +9,6 @@ let busy = false;
 
 const bot = new Bot(process.env.TG_API_KEY);
 
-await bot.api.setMyCommands([
-    { command: "start", description: "bot description" },
-    { command: "stop", description: "stop notification" },
-]);
-
 bot.command('start', start_handler);
 
 bot.command('stop', (ctx) => { 
@@ -25,6 +20,11 @@ bot.on('message', async (ctx) => address_handler(ctx, session));
 
 bot.start();
 console.log('bot is running ...');
+
+await bot.api.setMyCommands([
+    { command: "start", description: "bot description" },
+    { command: "stop", description: "stop notification" },
+]);
 
 setInterval(async () => {
     if (!busy) {
