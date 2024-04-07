@@ -62,9 +62,10 @@ export async function notify_handler(bot, session) {
         const processed = [];
         for (const candidate of session[user]) {
             const lp = await getPositionDetails(orca, candidate);            
-            console.log(lp);
             if (lp.pool_price > lp.upper_price || lp.pool_price < lp.lower_price) {
+                console.log('>>>> Timestamp', new Date().toLocaleString());
                 console.log(">>>> out range");
+                console.log(lp);
                 const range_text = format(lp.pool_price, lp.lower_price, lp.upper_price);
                 let msg = "🔔  Your LP is out of range:\n\n" +
                     `🚫  *${lp.token_a} \\- ${lp.token_b}*  ${range_text}`;

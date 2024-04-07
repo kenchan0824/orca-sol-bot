@@ -22,11 +22,11 @@ console.log('bot is running ...');
 
 setInterval(async () => {
     if (!busy) {
-        console.log('>>>> event loop');
         busy = true;
         await notify_handler(bot, session);
         busy = false;
     } else {
+        console.log('>>>> Timestamp', new Date().toLocaleString());
         console.log('>>>> busy')
     }
-}, 5000);
+}, 5_000);
