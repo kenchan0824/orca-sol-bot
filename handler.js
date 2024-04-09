@@ -67,19 +67,24 @@ export async function notify_handler(bot, session) {
     for (const user in session) {
         const processed = [];
         for (const candidate of session[user]) {
-            const lp = await getPositionDetails(orca, candidate);            
-            if (lp.pool_price > lp.upper_price || lp.pool_price < lp.lower_price) {
-                console.log('>>>> Timestamp', new Date().toLocaleString());
-                console.log(">>>> out range");
-                console.log(lp);
-                const range_text = format(lp.pool_price, lp.lower_price, lp.upper_price);
-                let msg = "🔔  Your LP is out of range:\n\n" +
-                    `🚫  *${lp.token_a} \\- ${lp.token_b}*  ${range_text}`;
-                bot.api.sendMessage(user, msg, { parse_mode: "MarkdownV2" });
-                processed.push(candidate);
+            try {
+                const lp = await getPositionDetails(orca, candidate);            
+                if (lp.pool_price > lp.upper_price || lp.pool_price < lp.lower_price) {
+                    console.log('>>>> Timestamp', new Date().toLocaleString());
+                    console.log(">>>> out range");
+                    console.log(lp);
+                    const range_text = format(lp.pool_price, lp.lower_price, lp.upper_price);
+                    let msg = "🔔  Your LP is out of range:\n\n" +
+                        `🚫  *${lp.token_a} \\- ${lp.token_b}*  ${range_text}`;
+                    await bot.api.sendMessage(user, msg, { parse_mode: "MarkdownV2" });
+                    processed.push(candidate);
+                }
+            } catch (err) {
+                console.log(err.message);
+            } finally {
+                session[user] = session[user].filter((address) => !processed.includes(address));
+                await sleep(400);
             }
-            session[user] = session[user].filter((address) => !processed.includes(address));
-            await sleep(400);
         }
     }
 }
