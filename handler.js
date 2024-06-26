@@ -34,11 +34,13 @@ export async function address_handler(ctx, session) {
 
             const lines = [];
             for (const key of position_keys) {
-                const lp = await getPositionDetails(orca, key);
-                const out_range = lp.pool_price > lp.upper_price || lp.pool_price < lp.lower_price;
-                const range_text = format(lp.pool_price, lp.lower_price, lp.upper_price);
-                lines.push(`${out_range ? '🚫' : '✅'}  *${lp.token_a} \\- ${lp.token_b}*  ${range_text}`)
-                if (!out_range) candidates.push(key);
+                try {
+                    const lp = await getPositionDetails(orca, key);
+                    const out_range = lp.pool_price > lp.upper_price || lp.pool_price < lp.lower_price;
+                    const range_text = format(lp.pool_price, lp.lower_price, lp.upper_price);
+                    lines.push(`${out_range ? '🚫' : '✅'}  *${lp.token_a} \\- ${lp.token_b}*  ${range_text}`)
+                    if (!out_range) candidates.push(key);
+                } catch (err) {}
             }
             await ctx.reply(lines.join('\n\n'), { parse_mode: "MarkdownV2" });            
         } else {
