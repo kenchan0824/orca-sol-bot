@@ -63,14 +63,17 @@ export async function listTokenSymbols() {
 export async function getPositionDetails(ctx, position_address) {
     const client = buildWhirlpoolClient(ctx);
     const pubkey = new PublicKey(position_address);
+    
+    console.log('get position data')
     const position = (await client.getPosition(pubkey)).getData();
-    await sleep(400);
+    await sleep(2000);
     
     // Get the pool to which the position belongs
+    console.log('get pool')
     const pool = await client.getPool(position.whirlpool);
     const token_a = pool.getTokenAInfo();
     const token_b = pool.getTokenBInfo();
-    await sleep(400);
+    await sleep(2000);
 
     const pool_price = +PriceMath.sqrtPriceX64ToPrice(pool.getData().sqrtPrice, token_a.decimals, token_b.decimals);
     
