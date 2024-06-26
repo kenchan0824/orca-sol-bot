@@ -83,10 +83,9 @@ export async function notify_handler(bot, session) {
                 }
             } catch (err) {
                 console.log(err.message);
-            } finally {
-                session[user] = session[user].filter((address) => !processed.includes(address));
-                await sleep(400);
             }
+            session[user] = session[user].filter((address) => !processed.includes(address));
+            await sleep(2000);
         }
     }
 }
