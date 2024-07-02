@@ -33,8 +33,8 @@ export async function listPositionsByOwner(ctx, wallet_address) {
         if (new BN(parsed.amount.toString()).eq(new BN(1))) {
             
             // Derive the address of Whirlpool's position from the mint address
-            const pda = PDAUtil.getPosition(ctx.program.programId, parsed.mint);
-            pda_pubkeys.push(pda.publicKey);
+            const {publicKey, _} = PDAUtil.getPosition(ctx.program.programId, parsed.mint);
+            pda_pubkeys.push(publicKey);
         }
     });
 
@@ -60,49 +60,6 @@ export async function listTokenSymbols() {
     return tokensSymbols;
 }
 
-export async function getPositionDetails(ctx, position_address) {
-    const client = buildWhirlpoolClient(ctx);
-    const pubkey = new PublicKey(position_address);
-    
-    console.log('get position data')
-    const position = (await client.getPosition(pubkey)).getData();
-    await sleep(2000);
-    
-    // Get the pool to which the position belongs
-    console.log('get pool')
-    const pool = await client.getPool(position.whirlpool);
-    const token_a = pool.getTokenAInfo();
-    const token_b = pool.getTokenBInfo();
-    await sleep(2000);
-
-    const pool_price = +PriceMath.sqrtPriceX64ToPrice(pool.getData().sqrtPrice, token_a.decimals, token_b.decimals);
-    
-    // Get the price range of the position
-    const lower_price = +PriceMath.tickIndexToPrice(position.tickLowerIndex, token_a.decimals, token_b.decimals);
-    const upper_price = +PriceMath.tickIndexToPrice(position.tickUpperIndex, token_a.decimals, token_b.decimals);
-
-    const token_a_mint = token_a.mint.toBase58();
-    const token_b_mint = token_b.mint.toBase58();
-
-    if (checkTokensFlipped(token_a_mint, token_b_mint)) {
-        return {
-            token_a: ctx.tokenSymbols[token_b_mint]
-            , token_b: ctx.tokenSymbols[token_a_mint]
-            , pool_price: 1/pool_price
-            , lower_price: 1/upper_price
-            , upper_price: 1/lower_price
-        };
-    }
-
-    return {
-        token_a: ctx.tokenSymbols[token_a_mint]
-        , token_b: ctx.tokenSymbols[token_b_mint]
-        , pool_price
-        , lower_price
-        , upper_price
-    };
-}
-
 function checkTokensFlipped(token_a, token_b) {
     const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
     const WSOL_MINT = 'So11111111111111111111111111111111111111112';
@@ -112,3 +69,63 @@ function checkTokensFlipped(token_a, token_b) {
     
     return false;
 }
+
+export async function getPositionsDetails(ctx, positionAddresses) {
+    const client = buildWhirlpoolClient(ctx);
+    const pubkeys = positionAddresses.map(pda => new PublicKey(pda))
+    const positions = await client.getPositions(pubkeys)
+    await sleep(2000);
+    const positionsPool = Object.fromEntries(
+        Object.entries(positions).map(
+            ([key, value]) => [key, value.getData().whirlpool]
+        )
+    )
+
+    const pools = await client.getPools(Object.values(positionsPool))
+    await sleep(2000);
+    const poolsMap = Object.fromEntries(
+        pools.map(pool => [pool.address, pool])
+    )
+
+    return Object.entries(positionsPool).map(([positionAddress, poolAddress]) => {
+
+        const position = positions[positionAddress].getData()
+        const pool = poolsMap[poolAddress] 
+        const token_a = pool.getTokenAInfo();
+        const token_b = pool.getTokenBInfo();
+    
+        const pool_price = +PriceMath.sqrtPriceX64ToPrice(pool.getData().sqrtPrice, token_a.decimals, token_b.decimals);
+        
+        // Get the price range of the position
+        const lower_price = +PriceMath.tickIndexToPrice(position.tickLowerIndex, token_a.decimals, token_b.decimals);
+        const upper_price = +PriceMath.tickIndexToPrice(position.tickUpperIndex, token_a.decimals, token_b.decimals);
+    
+        const token_a_mint = token_a.mint.toBase58();
+        const token_b_mint = token_b.mint.toBase58();
+    
+        if (checkTokensFlipped(token_a_mint, token_b_mint)) {
+            return {
+                token_a: ctx.tokenSymbols[token_b_mint]
+                , token_b: ctx.tokenSymbols[token_a_mint]
+                , pool_price: 1/pool_price
+                , lower_price: 1/upper_price
+                , upper_price: 1/lower_price
+            };
+        }
+    
+        return {
+            pda: positionAddress
+            , token_a: ctx.tokenSymbols[token_a_mint]
+            , token_b: ctx.tokenSymbols[token_b_mint]
+            , pool_price
+            , lower_price
+            , upper_price
+        };
+    });
+}
+
+// const ctx = await getContext()
+// const client = buildWhirlpoolClient(ctx)
+// const positionAddresses = await listPositionsByOwner(ctx, 'FEYSHggf3DNhfvKZiSGkSTmswurZSnn26gNJEnxcZSqk')
+// const details = await getPositionsDetails(ctx, positionAddresses)
+// console.log(details)
