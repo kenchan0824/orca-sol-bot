@@ -74,7 +74,7 @@ export async function getPositionsDetails(ctx, positionAddresses) {
     const client = buildWhirlpoolClient(ctx);
     const pubkeys = positionAddresses.map(pda => new PublicKey(pda))
     const positions = await client.getPositions(pubkeys)
-    await sleep(2000);
+    await sleep(500);
     const positionsPool = Object.fromEntries(
         Object.entries(positions).map(
             ([key, value]) => [key, value.getData().whirlpool]
@@ -82,7 +82,7 @@ export async function getPositionsDetails(ctx, positionAddresses) {
     )
 
     const pools = await client.getPools(Object.values(positionsPool))
-    await sleep(2000);
+    await sleep(500);
     const poolsMap = Object.fromEntries(
         pools.map(pool => [pool.address, pool])
     )
