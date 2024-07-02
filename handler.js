@@ -64,9 +64,11 @@ export async function notify_handler(bot, session) {
     const orca = await getContext();
     for (const user in session) {
         const processed = [];
-        for (const candidate of session[user]) {
-            try {
-                const lp = await getPositionDetails(orca, candidate);            
+        const canditates = session[user]
+        try {
+            const lps = await getPositionsDetails(orca, canditates);
+            for (const lp of lps) {
+
                 if (lp.pool_price > lp.upper_price || lp.pool_price < lp.lower_price) {
                     console.log('>>>> Timestamp', new Date().toLocaleString());
                     console.log(">>>> out range");
@@ -75,13 +77,12 @@ export async function notify_handler(bot, session) {
                     let msg = "🔔  Your LP is out of range:\n\n" +
                         `🚫  *${lp.token_a} \\- ${lp.token_b}*  ${range_text}`;
                     await bot.api.sendMessage(user, msg, { parse_mode: "MarkdownV2" });
-                    processed.push(candidate);
+                    processed.push(lp.pda);
                 }
-            } catch (err) {
-                console.log(err.message);
             }
-            session[user] = session[user].filter((address) => !processed.includes(address));
-            // await sleep(2000);
+        } catch (err) {
+            console.log(err.message);
         }
+        session[user] = session[user].filter((address) => !processed.includes(address));
     }
 }

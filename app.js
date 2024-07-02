@@ -30,7 +30,7 @@ setInterval(async () => {
         console.log('>>>> Timestamp', new Date().toLocaleString());
         console.log('>>>> busy')
     }
-}, 300_000);
+}, 120_000);
 
 bot.catch((err) => {
     const ctx = err.ctx;

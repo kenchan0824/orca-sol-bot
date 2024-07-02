@@ -105,14 +105,15 @@ export async function getPositionsDetails(ctx, positionAddresses) {
     
         if (checkTokensFlipped(token_a_mint, token_b_mint)) {
             return {
-                token_a: ctx.tokenSymbols[token_b_mint]
+                pda: positionAddress
+                , token_a: ctx.tokenSymbols[token_b_mint]
                 , token_b: ctx.tokenSymbols[token_a_mint]
                 , pool_price: 1/pool_price
                 , lower_price: 1/upper_price
                 , upper_price: 1/lower_price
             };
         }
-    
+
         return {
             pda: positionAddress
             , token_a: ctx.tokenSymbols[token_a_mint]
