@@ -1,7 +1,7 @@
 import { Bot } from 'grammy';
 import dotenv from 'dotenv';
 dotenv.config();
-import { address_handler, start_handler } from './handler.js';
+import { address_handler, notify_handler, start_handler } from './handler.js';
 
 
 const session = {};
@@ -21,16 +21,16 @@ bot.on('message', async (ctx) => address_handler(ctx, session));
 bot.start();
 console.log('bot is running ...');
 
-// setInterval(async () => {
-//     if (!busy) {
-//         busy = true;
-//         await notify_handler(bot, session);
-//         busy = false;
-//     } else {
-//         console.log('>>>> Timestamp', new Date().toLocaleString());
-//         console.log('>>>> busy')
-//     }
-// }, 300_000);
+setInterval(async () => {
+    if (!busy) {
+        busy = true;
+        await notify_handler(bot, session);
+        busy = false;
+    } else {
+        console.log('>>>> Timestamp', new Date().toLocaleString());
+        console.log('>>>> busy')
+    }
+}, 120_000);
 
 bot.catch((err) => {
     const ctx = err.ctx;
