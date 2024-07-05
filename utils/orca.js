@@ -75,26 +75,26 @@ async function getPositionsWithPool(context, positionsData) {
     
         let tokenA = tokensMap[pool.tokenMintA]
         let tokenB = tokensMap[pool.tokenMintB]
-        if (checkTokensFlipped(tokenA.mint, tokenB.mint)) {
-            const temp = tokenA
-            tokenA = tokenB
-            tokenB = temp        
-        }
-    
         const poolPrice = +PriceMath.sqrtPriceX64ToPrice(pool.sqrtPrice, tokenA.decimals, tokenB.decimals);
-    
-        // Get the price range of the position
         const lowerPrice = +PriceMath.tickIndexToPrice(position.tickLowerIndex, tokenA.decimals, tokenB.decimals);
         const upperPrice = +PriceMath.tickIndexToPrice(position.tickUpperIndex, tokenA.decimals, tokenB.decimals);
-    
-        return {
-            key: position.key
-            , token_a: tokenA.symbol
-            , token_b: tokenB.symbol
-            , pool_price: poolPrice
-            , lower_price: lowerPrice
-            , upper_price: upperPrice
-        }
+
+        const info = checkTokensFlipped(tokenA.mint, tokenB.mint) ?
+            {
+                tokenA: tokenB.symbol,
+                tokenB: tokenA.symbol,
+                poolPrice: 1/poolPrice, 
+                lowerPrice: 1/upperPrice, 
+                upperPrice: 1/lowerPrice
+            } : {
+                tokenA: tokenA.symbol,
+                tokenB: tokenB.symbol,
+                poolPrice, 
+                lowerPrice, 
+                upperPrice
+            };
+        info.key = position.key
+        return info;
     });
 
     return positionsWithPool;

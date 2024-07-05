@@ -3,7 +3,7 @@ import { getContext, getPositionsByKeys, getPositionsFromMints } from './utils/o
 import { format } from './utils/range.js';
 
 
-export function start_handler(ctx) {
+export function startHandler(ctx) {
 
     const msg = "*Orca Alert Bot*\n" +
         "We notify when your Orca 🐳 LPs are out of range\\.\n" +
@@ -17,7 +17,7 @@ export function start_handler(ctx) {
     ctx.reply(msg, { parse_mode: "MarkdownV2" });
 }
 
-export async function address_handler(ctx, session) {
+export async function addressHandler(ctx, session) {
     if (!ctx.message.text) return;
 
     const walletAdddress = ctx.message.text.trim();
@@ -33,11 +33,11 @@ export async function address_handler(ctx, session) {
 
         if (positions.length) {
             const lines = positions.map(lp => {
-                const out_range = lp.pool_price > lp.upper_price || lp.pool_price < lp.lower_price;
-                const range_text = format(lp.pool_price, lp.lower_price, lp.upper_price);
+                const isOutRange = lp.poolPrice > lp.upperPrice || lp.poolPrice < lp.lowerPrice;
+                const rangeText = format(lp.poolPrice, lp.lowerPrice, lp.upperPrice);
                 
-                if (!out_range) notifications.push(lp.key);
-                return `${out_range ? '🚫' : '✅'}  *${lp.token_a} \\- ${lp.token_b}*  ${range_text}`
+                if (!isOutRange) notifications.push(lp.key);
+                return `${isOutRange ? '🚫' : '✅'}  *${lp.tokenA} \\- ${lp.tokenB}*  ${rangeText}`
             })
             await ctx.reply(lines.join('\n\n'), { parse_mode: "MarkdownV2" });
 
@@ -52,7 +52,8 @@ export async function address_handler(ctx, session) {
     } catch (err) {
         await ctx.reply("🙅🏻‍♂️  Sorry, I can't recognise your wallet address.");
         await ctx.reply("🔕  Notification Off");
-        console.log(err);
+        console.log('addressHandler', err);
+
     } finally {
         if (notifications.length) {
             session[ctx.message.from.id] = notifications;
@@ -62,13 +63,13 @@ export async function address_handler(ctx, session) {
     }
 }
 
-export async function notify_handler(bot, session) {
+export async function notifyHandler(bot, session) {
     console.log('checking notifications ...')
     let orca = null;
     try {
         orca = await getContext();
     } catch (err) {
-        console.log('notify_handler', err.message);
+        console.log('notifyHandler', err.message);
         return;
     }
 
@@ -79,19 +80,19 @@ export async function notify_handler(bot, session) {
             const positions = await getPositionsByKeys(orca, keys);
             for (const lp of positions) {
 
-                if (lp.pool_price > lp.upper_price || lp.pool_price < lp.lower_price) {
+                if (lp.poolPrice > lp.upperPrice || lp.poolPrice < lp.lowerPrice) {
                     console.log('>>>> Timestamp', new Date().toLocaleString());
                     console.log(">>>> out range");
                     console.log(lp);
-                    const range_text = format(lp.pool_price, lp.lower_price, lp.upper_price);
+                    const rangeText = format(lp.poolPrice, lp.lowerPrice, lp.upperPrice);
                     let msg = "🔔  Your LP is out of range:\n\n" +
-                        `🚫  *${lp.token_a} \\- ${lp.token_b}*  ${range_text}`;
+                        `🚫  *${lp.tokenB} \\- ${lp.tokenB}*  ${rangeText}`;
                     await bot.api.sendMessage(user, msg, { parse_mode: "MarkdownV2" });
                     processed.push(lp.key);
                 }
             }
         } catch (err) {
-            console.log('notify_handler', err.message);
+            console.log('notifyHandler', err.message);
         }
         session[user] = session[user].filter((address) => !processed.includes(address));
     }
