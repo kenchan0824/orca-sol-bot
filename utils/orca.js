@@ -1,12 +1,11 @@
 import { Connection, PublicKey } from "@solana/web3.js";
 import {
-    WhirlpoolContext, ORCA_WHIRLPOOL_PROGRAM_ID, PDAUtil, IGNORE_CACHE
-    , buildWhirlpoolClient, PriceMath
+    WhirlpoolContext, PDAUtil, PriceMath, 
+    IGNORE_CACHE, PREFER_CACHE, ORCA_WHIRLPOOL_PROGRAM_ID
 } from "@orca-so/whirlpools-sdk";
 import axios from 'axios';
 import dotenv from 'dotenv';
 dotenv.config();
-import { sleep } from './async.js';
 
 
 export async function getContext() {
@@ -15,98 +14,97 @@ export async function getContext() {
 }
 
 export async function getPositionsFromMints(context, mints) {
-    const possiblePositionAddresses = mints.map(mint => {
+    const possiblePDAs = mints.map(mint => {
         // Derive program address of Whirlpool's position
         const { publicKey: pda } = PDAUtil.getPosition(ORCA_WHIRLPOOL_PROGRAM_ID, mint);
         return pda;
     })
 
     // Try to get Whirlpool position data from PDA
-    const allPositionInfos = await context.fetcher.getPositions(possiblePositionAddresses, IGNORE_CACHE);    
-    const positionAddresses = possiblePositionAddresses.filter(
-        address => allPositionInfos.get(address.toBase58()) != null
-    )
-    return positionAddresses;
+    const positionsMap = await context.fetcher.getPositions(possiblePDAs, IGNORE_CACHE);    
+
+    const positionsData = []
+    for (const [key, data] of positionsMap) {
+        if (!data) continue;
+        data.key = key
+        positionsData.push(data)
+    }
+
+    return await getPositionsWithPool(context, positionsData)
 };
 
-export async function getTokenSymbols() {
-    const tokensSymbols = {}
+export async function getPositionsByKeys(context, keys) {
+    const positionsMap = await context.fetcher.getPositions(keys, PREFER_CACHE);    
+
+    const positionsData = []
+    for (const [key, data] of positionsMap) {
+        data.key = key
+        positionsData.push(data)
+    }
+
+    return await getPositionsWithPool(context, positionsData)
+};
+
+async function getTokensMap() {
+    const tokensMap = {}
     const { data } = await axios.get("https://api.mainnet.orca.so/v1/token/list");
-    data.tokens.forEach(({ mint, symbol }) => {
-        if (symbol) tokensSymbols[mint] = symbol;
-    })
-    return tokensSymbols;
+    for (const token of data.tokens) {
+        if (!token.symbol) continue;
+        tokensMap[token.mint] = token;
+    }
+    return tokensMap;
 }
 
-function checkTokensFlipped(token_a, token_b) {
+function checkTokensFlipped(mintA, mintB) {
     const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
     const WSOL_MINT = 'So11111111111111111111111111111111111111112';
 
-    if (token_a == USDC_MINT) return true;
-    if (token_a == WSOL_MINT) return (token_b !== USDC_MINT);
+    if (mintA == USDC_MINT) return true;
+    if (mintA == WSOL_MINT) return (mintB !== USDC_MINT);
     
     return false;
 }
 
-export async function getPositionsInfo(ctx, positionAddresses) {
-    const client = buildWhirlpoolClient(ctx);
-    const pubkeys = positionAddresses.map(pda => new PublicKey(pda))
-    await sleep(2000);
-    const positions = await client.getPositions(pubkeys)
-    const positionsPool = Object.fromEntries(
-        Object.entries(positions).map(
-            ([key, value]) => [key, value.getData().whirlpool]
-        )
-    )
-
-    await sleep(2000);
-    const pools = await client.getPools(Object.values(positionsPool))
-    const poolsMap = Object.fromEntries(
-        pools.map(pool => [pool.address, pool])
-    )
-
-    const tokenSymbols = await getTokenSymbols();
+async function getPositionsWithPool(context, positionsData) {
+    const allPoolsAddress = positionsData.map(position => position.whirlpool)
+    const poolsMap = await context.fetcher.getPools(allPoolsAddress, IGNORE_CACHE)
+    const tokensMap = await getTokensMap()
     
-    return Object.entries(positionsPool).map(([positionAddress, poolAddress]) => {
-
-        const position = positions[positionAddress].getData()
-        const pool = poolsMap[poolAddress] 
-        const token_a = pool.getTokenAInfo();
-        const token_b = pool.getTokenBInfo();
+    const positionsWithPool = positionsData.map(position => {
+        const pool = poolsMap.get(position.whirlpool.toBase58());
     
-        const pool_price = +PriceMath.sqrtPriceX64ToPrice(pool.getData().sqrtPrice, token_a.decimals, token_b.decimals);
-        
-        // Get the price range of the position
-        const lower_price = +PriceMath.tickIndexToPrice(position.tickLowerIndex, token_a.decimals, token_b.decimals);
-        const upper_price = +PriceMath.tickIndexToPrice(position.tickUpperIndex, token_a.decimals, token_b.decimals);
-    
-        const token_a_mint = token_a.mint.toBase58();
-        const token_b_mint = token_b.mint.toBase58();
-    
-        if (checkTokensFlipped(token_a_mint, token_b_mint)) {
-            return {
-                pda: positionAddress
-                , token_a: tokenSymbols[token_b_mint]
-                , token_b: tokenSymbols[token_a_mint]
-                , pool_price: 1/pool_price
-                , lower_price: 1/upper_price
-                , upper_price: 1/lower_price
-            };
+        let tokenA = tokensMap[pool.tokenMintA]
+        let tokenB = tokensMap[pool.tokenMintB]
+        if (checkTokensFlipped(tokenA.mint, tokenB.mint)) {
+            const temp = tokenA
+            tokenA = tokenB
+            tokenB = temp        
         }
-
+    
+        const poolPrice = +PriceMath.sqrtPriceX64ToPrice(pool.sqrtPrice, tokenA.decimals, tokenB.decimals);
+    
+        // Get the price range of the position
+        const lowerPrice = +PriceMath.tickIndexToPrice(position.tickLowerIndex, tokenA.decimals, tokenB.decimals);
+        const upperPrice = +PriceMath.tickIndexToPrice(position.tickUpperIndex, tokenA.decimals, tokenB.decimals);
+    
         return {
-            pda: positionAddress
-            , token_a: tokenSymbols[token_a_mint]
-            , token_b: tokenSymbols[token_b_mint]
-            , pool_price
-            , lower_price
-            , upper_price
-        };
+            key: position.key
+            , token_a: tokenA.symbol
+            , token_b: tokenB.symbol
+            , pool_price: poolPrice
+            , lower_price: lowerPrice
+            , upper_price: upperPrice
+        }
     });
+
+    return positionsWithPool;
 }
 
+// import { getNftMintsByOwner } from './tokens.js'
+
 // const ctx = await getContext()
-// const client = buildWhirlpoolClient(ctx)
-// const positionAddresses = await listPositionsByOwner(ctx, 'FEYSHggf3DNhfvKZiSGkSTmswurZSnn26gNJEnxcZSqk')
-// const details = await getPositionsDetails(ctx, positionAddresses)
-// console.log(details)
+// const mints = await getNftMintsByOwner(ctx.connection, '3cnckTTJqN5vLhnUvVQSXSwdbZsTFoi93bz4aqthnXX7')
+// let positionsInfo = await getPositionsFromMints(ctx, mints)
+// const keys = positionsInfo.map((position) => position.key)
+// positionsInfo = await getPositionsByKeys(ctx, keys)
+// console.log(positionsInfo)

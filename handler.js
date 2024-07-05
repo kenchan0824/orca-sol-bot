@@ -1,5 +1,5 @@
 import { getNftMintsByOwner } from './utils/tokens.js';
-import { getContext, getPositionsFromMints, getPositionsInfo } from './utils/orca.js';
+import { getContext, getPositionsByKeys, getPositionsFromMints } from './utils/orca.js';
 import { format } from './utils/range.js';
 
 
@@ -29,15 +29,14 @@ export async function address_handler(ctx, session) {
         const orca = await getContext();
         await ctx.reply("🤔  Let me check your LPs ...");
         const mintAddresses = await getNftMintsByOwner(orca.connection, walletAdddress);
-        const positionAddresses = await getPositionsFromMints(orca, mintAddresses);
+        const positions = await getPositionsFromMints(orca, mintAddresses);
 
-        if (positionAddresses.length) {
-            const positions = await getPositionsInfo(orca, positionAddresses)
+        if (positions.length) {
             const lines = positions.map(lp => {
                 const out_range = lp.pool_price > lp.upper_price || lp.pool_price < lp.lower_price;
                 const range_text = format(lp.pool_price, lp.lower_price, lp.upper_price);
                 
-                if (!out_range) notifications.push(lp.pda);
+                if (!out_range) notifications.push(lp.key);
                 return `${out_range ? '🚫' : '✅'}  *${lp.token_a} \\- ${lp.token_b}*  ${range_text}`
             })
             await ctx.reply(lines.join('\n\n'), { parse_mode: "MarkdownV2" });
@@ -65,12 +64,19 @@ export async function address_handler(ctx, session) {
 
 export async function notify_handler(bot, session) {
     console.log('checking notifications ...')
-    const orca = await getContext();
+    let orca = null;
+    try {
+        orca = await getContext();
+    } catch (err) {
+        console.log('notify_handler', err.message);
+        return;
+    }
+
     for (const user in session) {
         const processed = [];
-        const positionAddresses = session[user]
+        const keys = session[user]
         try {
-            const positions = await getPositionsInfo(orca, positionAddresses);
+            const positions = await getPositionsByKeys(orca, keys);
             for (const lp of positions) {
 
                 if (lp.pool_price > lp.upper_price || lp.pool_price < lp.lower_price) {
@@ -81,11 +87,11 @@ export async function notify_handler(bot, session) {
                     let msg = "🔔  Your LP is out of range:\n\n" +
                         `🚫  *${lp.token_a} \\- ${lp.token_b}*  ${range_text}`;
                     await bot.api.sendMessage(user, msg, { parse_mode: "MarkdownV2" });
-                    processed.push(lp.pda);
+                    processed.push(lp.key);
                 }
             }
         } catch (err) {
-            console.log(err.message);
+            console.log('notify_handler', err.message);
         }
         session[user] = session[user].filter((address) => !processed.includes(address));
     }

@@ -6,7 +6,6 @@ import { address_handler, notify_handler, start_handler } from './handler.js';
 
 const session = {};
 let busy = false;
-
 const bot = new Bot(process.env.TG_API_KEY);
 
 bot.command('start', start_handler);
@@ -30,7 +29,7 @@ setInterval(async () => {
         console.log('>>>> Timestamp', new Date().toLocaleString());
         console.log('>>>> busy')
     }
-}, 120_000);
+}, 60_000);
 
 bot.catch((err) => {
     const ctx = err.ctx;
