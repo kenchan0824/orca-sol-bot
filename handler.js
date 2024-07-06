@@ -76,6 +76,8 @@ export async function notifyHandler(bot, session) {
     for (const user in session) {
         const processed = [];
         const keys = session[user]
+        if (!keys.length) continue; 
+
         try {
             const positions = await getPositionsByKeys(orca, keys);
             for (const lp of positions) {
