@@ -86,7 +86,7 @@ export async function notifyHandler(bot, session) {
                     console.log(lp);
                     const rangeText = format(lp.poolPrice, lp.lowerPrice, lp.upperPrice);
                     let msg = "🔔  Your LP is out of range:\n\n" +
-                        `🚫  *${lp.tokenB} \\- ${lp.tokenB}*  ${rangeText}`;
+                        `🚫  *${lp.tokenA} \\- ${lp.tokenB}*  ${rangeText}`;
                     await bot.api.sendMessage(user, msg, { parse_mode: "MarkdownV2" });
                     processed.push(lp.key);
                 }
