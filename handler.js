@@ -65,13 +65,6 @@ export async function addressHandler(ctx, session) {
 
 export async function notifyHandler(bot, session) {
     console.log('checking notifications ...')
-    let orca = null;
-    try {
-        orca = await getContext();
-    } catch (err) {
-        console.log('notifyHandler', err.message);
-        return;
-    }
 
     for (const user in session) {
         const processed = [];
@@ -79,6 +72,7 @@ export async function notifyHandler(bot, session) {
         if (!keys.length) continue; 
 
         try {
+            const orca = await getContext();
             const positions = await getPositionsByKeys(orca, keys);
             for (const lp of positions) {
 
