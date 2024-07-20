@@ -23,13 +23,17 @@ console.log('bot is running ...');
 setInterval(async () => {
     if (!busy) {
         busy = true;
-        await notifyHandler(bot, session);
+        try {
+            await notifyHandler(bot, session);
+        } catch (err) {
+            console.log('setInterval', err.message)
+        }
         busy = false;
     } else {
         console.log('>>>> Timestamp', new Date().toLocaleString());
         console.log('>>>> busy')
     }
-}, 60_000);
+}, 120_000);
 
 bot.catch((err) => {
     const ctx = err.ctx;
