@@ -88,7 +88,7 @@ export async function notifyHandler(bot, session) {
                 }
             }
         } catch (err) {
-            console.log('notifyHandler', err.message);
+            console.log('notifyHandler', err.stack);
         }
         session[user] = session[user].filter((address) => !processed.includes(address));
     }
