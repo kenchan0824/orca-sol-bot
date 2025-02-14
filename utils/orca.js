@@ -21,7 +21,7 @@ export async function getPositionsFromMints(context, mints) {
     })
 
     // Try to get Whirlpool position data from PDA
-    const positionsMap = await context.fetcher.getPositions(possiblePDAs, IGNORE_CACHE);    
+    const positionsMap = await context.fetcher.getPositions(possiblePDAs, IGNORE_CACHE);
 
     const positionsData = []
     for (const [key, data] of positionsMap) {
